@@ -20,7 +20,7 @@ def main(argv):
         nonlocal keepWorking
         keepWorking = False
 
-    background = argv[0] if len(argv) > 0 else '/test.background'
+    background = argv[0] if len(argv) > 0 else os.getenv('FBTERM_BACKGROUND_IMAGE_PATH', '/fbterm-background-feeder.test')
     consumer = int(argv[1]) if len(argv) > 1 else None
 
     fb_info = info.minimal_info(info.extract_info(linuxfb.get_info()))
