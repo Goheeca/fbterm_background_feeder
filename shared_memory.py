@@ -4,11 +4,6 @@ import os
 import mmap
 
 
-try:
-    unicode
-except NameError:
-    unicode = str
-
 libc = ctypes.cdll.LoadLibrary(ctypes.util.find_library("c"))
 librt = ctypes.util.find_library("rt")
 if librt:
@@ -25,13 +20,11 @@ else:
 
 def shm_open(name, oflag, mode):
     bname = name.encode('utf-8')
-
     result = _shm_open(
         ctypes.c_char_p(bname),
         ctypes.c_int(oflag),
         ctypes.c_ushort(mode)
     )
-
     if result == -1:
         raise RuntimeError(os.strerror(ctypes.get_errno()))
 
@@ -40,9 +33,7 @@ def shm_open(name, oflag, mode):
 
 def shm_unlink(name):
     bname = name.encode('utf-8')
-
     result = _shm_unlink(ctypes.c_char_p(bname))
-
     if result == -1:
         raise RuntimeError(os.strerror(ctypes.get_errno()))
 

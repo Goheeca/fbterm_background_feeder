@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+
 import os
 import time
 import signal
 import sys
+import errno
 
 import fbdev_metainfo
 import fbterm_feed
@@ -16,7 +19,7 @@ def main(argv):
         nonlocal keepWorking
         keepWorking = False
 
-    background = argv[0] if len(argv) > 0 else os.getenv('FBTERM_BACKGROUND_IMAGE_PATH', '/fbterm-background-feeder.test')
+    background = argv[0] if len(argv) > 0 else os.getenv('FBTERM_BACKGROUND_IMAGE_PATH')
     consumer = int(argv[1]) if len(argv) > 1 else None
 
     fb_info = fbdev_metainfo.get()
@@ -29,18 +32,26 @@ def main(argv):
     signal.signal(signal.SIGABRT, stopWorking)
     signal.signal(signal.SIGTERM, stopWorking)
 
-    with fbterm_feed.FbtermFeeder(background, size, consumer) as feeder:
-        with graphics.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
-            drawer = drawing.__drawer__(surface)
-            drawer.setup()
-            while keepWorking:
-                delay = drawer.draw()
+    try:
+        with fbterm_feed.FbtermFeeder(background, size, consumer) as feeder:
+            with graphics.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
+                drawer = drawing.__drawer__(surface)
+                drawer.setup()
+                while keepWorking:
+                    delay = drawer.draw()
+                    #surface.flush()
+                    feeder.notify_consumer()
+                    time.sleep(delay)
+                drawer.last()
                 #surface.flush()
                 feeder.notify_consumer()
-                time.sleep(delay)
-            drawer.last()
-            #surface.flush()
-            feeder.notify_consumer()
+    except RuntimeError:
+        sys.exit(errno.ENOENT)
+    except ValueError:
+        sys.exit(errno.EINVAL)
+    except ProcessLookupError:
+        sys.exit(errno.EINVAL)
+    sys.exit(0)
 
 
 if __name__ == '__main__':

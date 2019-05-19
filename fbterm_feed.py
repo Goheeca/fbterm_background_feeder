@@ -16,7 +16,7 @@ class FbtermFeeder(object):
         self._mmap = None
 
     def __enter__(self):
-        self._managedSHM = shared_memory.ManagedSHM(self.name, os.O_RDWR | os.O_CREAT, stat.S_IRUSR | stat.S_IWUSR, unlink=False)
+        self._managedSHM = shared_memory.ManagedSHM(self.name, os.O_RDWR, stat.S_IRUSR | stat.S_IWUSR, unlink=False)
         self._shm = self._managedSHM.__enter__()
         os.ftruncate(self._shm, self.size)
         self._managedMMap = shared_memory.ManagedMMap(self._shm, self.size, mmap.MAP_SHARED, mmap.ACCESS_READ | mmap.ACCESS_WRITE, preserve=True)
@@ -28,10 +28,7 @@ class FbtermFeeder(object):
     def _read_consumer_pid(self):
         pid_str = ''.join(map(chr, takewhile(lambda byte_: byte_ != 0, self._mmap[:128])))
         if len(pid_str) <= 19:
-            try:
-                self.consumer_pid = int(pid_str)
-            except ValueError:
-                pass
+            self.consumer_pid = int(pid_str)
 
     def get_data(self):
         return self._mmap
