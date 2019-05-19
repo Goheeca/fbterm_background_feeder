@@ -38,6 +38,9 @@ def main(argv):
                 #surface.flush()
                 feeder.notify_consumer()
                 time.sleep(delay)
+            drawer.last()
+            #surface.flush()
+            feeder.notify_consumer()
 
 
 if __name__ == '__main__':
