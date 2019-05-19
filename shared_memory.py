@@ -48,25 +48,37 @@ def shm_unlink(name):
 
 
 class ManagedSHM(object):
-    def __init__(self, name, oflag, mode):
+    def __init__(self, name, oflag, mode, unlink=True):
         self.args = name, oflag, mode
         self.name = name
+        self.unlink = unlink
 
     def __enter__(self):
         self.fd = shm_open(*self.args)
         return self.fd
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        shm_unlink(self.name)
+        if self.unlink:
+            shm_unlink(self.name)
+        else:
+            os.close(self.fd)
 
 
 class ManagedMMap(object):
-    def __init__(self, fd, length, flags, access, offset=0):
+    def __init__(self, fd, length, flags, access, offset=0, preserve=False):
         self.args = fd, length, flags, access, offset
+        self.preserve = preserve
 
     def __enter__(self):
         self.mem = mmap.mmap(*self.args)
+        if self.preserve:
+            self.data = self.mem.read(self.mem.size())
+            self.mem.seek(0, os.SEEK_SET)
         return self.mem
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        if self.preserve:
+            self.mem.seek(0, os.SEEK_SET)
+            self.mem.write(self.data)
+            self.mem.seek(0, os.SEEK_SET)
         self.mem.close()

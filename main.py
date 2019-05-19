@@ -34,9 +34,9 @@ def main(argv):
     signal.signal(signal.SIGABRT, stopWorking)
     signal.signal(signal.SIGTERM, stopWorking)
 
-    with shared_memory.ManagedSHM(background, os.O_RDWR | os.O_CREAT, stat.S_IRUSR | stat.S_IWUSR) as shm:
+    with shared_memory.ManagedSHM(background, os.O_RDWR | os.O_CREAT, stat.S_IRUSR | stat.S_IWUSR, unlink=False) as shm:
         os.ftruncate(shm, size)
-        with shared_memory.ManagedMMap(shm, size, mmap.MAP_SHARED, mmap.ACCESS_READ | mmap.ACCESS_WRITE) as mem:
+        with shared_memory.ManagedMMap(shm, size, mmap.MAP_SHARED, mmap.ACCESS_READ | mmap.ACCESS_WRITE, preserve=True) as mem:
             if consumer is None:
                 pid_str = ''.join(map(chr, takewhile(lambda byte_: byte_ != 0, mem[:128])))
                 if len(pid_str) <= 19:
