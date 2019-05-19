@@ -1,4 +1,4 @@
-import linuxfb
+import fbdev_metadata
 
 
 def getdict(struct):
@@ -51,12 +51,8 @@ def minimal_info(extracted_info):
     return minimal
 
 
-def main():
-    info = linuxfb.get_info()
+def get(fbdev=None):
+    info = fbdev_metadata.get(fbdev)
     info = extract_info(info)
     info = minimal_info(info)
-    print(info)
-
-
-if __name__ == '__main__':
-    main()
+    return info

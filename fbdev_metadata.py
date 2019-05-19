@@ -76,7 +76,7 @@ def get_var_info(fd):
     return var_info
 
 
-def get_info(fbdev=None):
+def get(fbdev=None):
     dev = fbdev or os.getenv('FRAMEBUFFER', '/dev/fb0')
     with ManagedFd(dev, os.O_RDWR) as fd:
         fix_info = get_fix_info(fd)
