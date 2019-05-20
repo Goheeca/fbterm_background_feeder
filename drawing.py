@@ -1,4 +1,3 @@
-
 import cairo
 import math
 
