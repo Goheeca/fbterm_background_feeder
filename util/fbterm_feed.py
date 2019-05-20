@@ -4,7 +4,7 @@ import mmap
 import signal
 from itertools import takewhile
 
-import shared_memory
+from . import shared_memory
 
 
 class FbtermFeeder(object):

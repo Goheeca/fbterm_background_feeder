@@ -6,13 +6,14 @@ import signal
 import sys
 import errno
 
-import fbdev_metainfo
-import fbterm_feed
-import graphics
-import drawing
+if __package__ is None:
+    import util.fbdev_metainfo as fb, util.fbterm_feed as term, util.graphics as g, __feed__
+else:
+    from .util import fbdev_metainfo as fb, fbterm_feed as term, graphics as g
+    from . import __feed__
 
 
-def main(argv):
+def main(argv, feed=__feed__.__drawer__):
     keepWorking = True
 
     def stopWorking(sig, frame):
@@ -20,9 +21,8 @@ def main(argv):
         keepWorking = False
 
     background = argv[0] if len(argv) > 0 else os.getenv('FBTERM_BACKGROUND_IMAGE_PATH')
-    consumer = int(argv[1]) if len(argv) > 1 else None
 
-    fb_info = fbdev_metainfo.get()
+    fb_info = fb.get()
     width, height = fb_info['resolution']
     size = fb_info['size']
     format = fb_info['pixel_format']
@@ -33,17 +33,15 @@ def main(argv):
     signal.signal(signal.SIGTERM, stopWorking)
 
     try:
-        with fbterm_feed.FbtermFeeder(background, size, consumer) as feeder:
-            with graphics.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
-                drawer = drawing.__drawer__(surface)
-                drawer.setup()
+        with term.FbtermFeeder(background, size, None) as feeder:
+            with g.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
+                drawer = feed(surface)
+                drawer.setup(argv[1:])
                 while keepWorking:
                     delay = drawer.draw()
-                    #surface.flush()
                     feeder.notify_consumer()
                     time.sleep(delay)
                 drawer.last()
-                #surface.flush()
                 feeder.notify_consumer()
     except RuntimeError:
         sys.exit(errno.ENOENT)

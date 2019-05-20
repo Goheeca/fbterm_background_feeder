@@ -1,4 +1,4 @@
-import fbdev_metadata
+from . import fbdev_metadata
 
 
 def getdict(struct):

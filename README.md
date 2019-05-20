@@ -4,7 +4,7 @@ This program cooperates with [my version](https://github.com/Goheeca/fbterm/rele
 
 ## How to use
 
-`python3 main.py PATH_TO_BACKGROUND [PID]`
+`python3 main.py PATH_TO_BACKGROUND [ARG]...`
 
 * `PATH_TO_BACKGROUND` -- the same as in the environment variable `FBTERM_BACKGROUND_IMAGE_PATH`
-* `PID` (optional) -- the pid of the fbterm instance; if it's not provided, it's read from the shared memory where it's initially placed by `fbterm`.
+* `ARG`s (arbitrary) -- these arguments are available in the `setup()` method in `__feed__.py`
