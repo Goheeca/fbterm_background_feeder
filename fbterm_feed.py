@@ -8,9 +8,10 @@ import shared_memory
 
 
 class FbtermFeeder(object):
-    def __init__(self, name, size, consumer_pid=None):
+    def __init__(self, name, size, double_buffer=False, consumer_pid=None):
         self.name = name
         self.size = size
+        self.double_buffer = double_buffer
         self.consumer_pid = consumer_pid
         self._shm = None
         self._mmap = None
@@ -33,9 +34,10 @@ class FbtermFeeder(object):
     def get_data(self):
         return self._mmap
 
-    def notify_consumer(self):
+    def notify_consumer(self, lower_buffer):
         if self.consumer_pid:
-            os.kill(self.consumer_pid, signal.SIGIO)
+            signo = signal.SIGIO if lower_buffer else signal.SIGURG
+            os.kill(self.consumer_pid, signo)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if self._mmap:

@@ -32,19 +32,25 @@ def main(argv):
     signal.signal(signal.SIGABRT, stopWorking)
     signal.signal(signal.SIGTERM, stopWorking)
 
+    double_buffer = True
+
+    if double_buffer:
+        size *= 2
+        height *= 2
+
     try:
         with fbterm_feed.FbtermFeeder(background, size, consumer) as feeder:
             with graphics.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
-                drawer = drawing.__drawer__(surface)
+                drawer = drawing.__drawer__(surface, double_buffer)
                 drawer.setup()
                 while keepWorking:
                     delay = drawer.draw()
                     #surface.flush()
-                    feeder.notify_consumer()
+                    feeder.notify_consumer(drawer.complete_buffer() == drawing.Buffer.LOWER)
                     time.sleep(delay)
                 drawer.last()
                 #surface.flush()
-                feeder.notify_consumer()
+                feeder.notify_consumer(drawer.complete_buffer() == drawing.Buffer.LOWER)
     except RuntimeError:
         sys.exit(errno.ENOENT)
     except ValueError:
