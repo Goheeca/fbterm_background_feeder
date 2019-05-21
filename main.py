@@ -20,7 +20,10 @@ def main(argv, feed=__feed__.__drawer__):
         nonlocal keepWorking
         keepWorking = False
 
-    background = argv[0] if len(argv) > 0 else os.getenv('FBTERM_BACKGROUND_IMAGE_PATH')
+    background = os.getenv('FBTERM_BACKGROUND_IMAGE_PATH')
+    if background is None:
+        background = argv[0] if len(argv) > 0 else sys.exit(errno.ENOENT)
+        argv = argv[1:]
 
     fb_info = fb.get()
     width, height = fb_info['resolution']
@@ -36,7 +39,7 @@ def main(argv, feed=__feed__.__drawer__):
         with term.FbtermFeeder(background, size, None) as feeder:
             with g.ManagedCairoSurface(feeder.get_data(), format, width, height) as surface:
                 drawer = feed(surface)
-                drawer.setup(argv[1:])
+                drawer.setup(argv)
                 while keepWorking:
                     delay = drawer.draw()
                     feeder.notify_consumer()
