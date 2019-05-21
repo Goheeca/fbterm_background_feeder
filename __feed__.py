@@ -35,6 +35,7 @@ class DemoDrawer(Drawer):
         return 0.01
 
     def _last(self, ctx, w, h, f, t):
+        # last frame drawing
         ctx.set_source_rgb(0, 0, 0)
         ctx.paint()
 
